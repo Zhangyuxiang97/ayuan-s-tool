@@ -41,6 +41,49 @@
         .sidebar { flex: 0 0 200px; background: #f8fafc; border-right: 1px solid var(--border-color); display: flex; flex-direction: column; padding: 1.5rem 1rem; }
         .sidebar-logo { font-size: 1.25rem; font-weight: 900; color: var(--text-main); margin-bottom: 2rem; padding: 0 0.5rem; display: flex; align-items: center; gap: 8px; }
         .sidebar-logo svg { width: 24px; height: 24px; color: var(--accent-color); }
+
+        /* ── 在线人数悬浮窗 ── */
+        .ow {
+            position: fixed; left: 20px; top: 50%; transform: translateY(-50%);
+            z-index: 200; width: 82px; border-radius: 22px;
+            box-shadow: 0 8px 32px rgba(0,0,0,0.13);
+            transition: background 0.5s ease, border-color 0.5s ease, box-shadow 0.5s ease;
+            overflow: hidden; user-select: none; cursor: default;
+        }
+        .ow__inner { padding: 18px 8px 14px; text-align: center; }
+        .ow__state { display: none; flex-direction: column; align-items: center; gap: 5px; animation: owFadeIn 0.4s ease; }
+        .ow__icon { font-size: 30px; line-height: 1; }
+        .ow__title { font-size: 12px; font-weight: 800; line-height: 1.3; }
+        .ow__sub { font-size: 10px; opacity: 0.65; }
+        .ow__ribbon { font-size: 9px; font-weight: 800; color: #fff; background: linear-gradient(90deg,#f9a825,#ff8f00); border-radius: 20px; padding: 2px 7px; letter-spacing: 0.3px; }
+        .ow__check { font-size: 22px; font-weight: 900; line-height: 1; animation: owPop 0.45s cubic-bezier(.36,1.56,.64,1) both; }
+
+        /* 状态切换 */
+        .ow--alone  .ow__state--alone   { display: flex; }
+        .ow--together .ow__state--together { display: flex; }
+        .ow--party  .ow__state--party   { display: flex; }
+
+        /* 1人：粉嫩玫瑰 */
+        .ow--alone { background: linear-gradient(155deg,#fff0f6,#fce4ec); border: 1.5px solid #f8bbd0; }
+        .ow--alone .ow__icon { animation: owFloat 3s ease-in-out infinite; }
+        .ow--alone .ow__title { color: #c2185b; }
+
+        /* 2人：暖金成就 */
+        .ow--together { background: linear-gradient(155deg,#fffde7,#fff8e1); border: 1.5px solid #ffd54f; box-shadow: 0 8px 32px rgba(255,193,7,.25), 0 0 0 3px rgba(255,213,79,.2); }
+        .ow--together .ow__icon { animation: owBounce 0.6s ease; }
+        .ow--together .ow__title { color: #e65100; }
+        .ow--together .ow__check { color: #f9a825; }
+
+        /* 3+人：彩蛋紫 */
+        .ow--party { background: linear-gradient(155deg,#f3e5f5,#ede7f6); border: 1.5px solid #ce93d8; }
+        .ow--party .ow__icon { animation: owWiggle 0.5s ease infinite alternate; }
+        .ow--party .ow__title { color: #6a1b9a; }
+
+        @keyframes owFloat   { 0%,100%{transform:translateY(0)} 50%{transform:translateY(-5px)} }
+        @keyframes owBounce  { 0%{transform:scale(.6);opacity:0} 70%{transform:scale(1.15)} 100%{transform:scale(1);opacity:1} }
+        @keyframes owWiggle  { from{transform:rotate(-8deg)} to{transform:rotate(8deg)} }
+        @keyframes owPop     { 0%{transform:scale(0);opacity:0} 70%{transform:scale(1.25)} 100%{transform:scale(1);opacity:1} }
+        @keyframes owFadeIn  { from{opacity:0;transform:translateY(6px)} to{opacity:1;transform:translateY(0)} }
         
         .tool-nav-btn { display: flex; align-items: center; gap: 12px; padding: 0.875rem 1rem; border: none; background: transparent; color: var(--text-muted); font-size: 0.95rem; font-weight: 500; border-radius: var(--radius-md); cursor: pointer; transition: all 0.2s ease; text-align: left; margin-bottom: 0.5rem; }
         .tool-nav-btn:hover { background: #e2e8f0; color: var(--text-main); }

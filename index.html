@@ -8,6 +8,7 @@
     <link rel="icon" href="assets/images/favicon.svg" type="image/svg+xml">
     <script src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js"></script>
     <link rel="stylesheet" href="assets/css/main.css">
+    <script src="assets/js/config.js"></script>
 </head>
 
 <body>
@@ -175,6 +176,34 @@
     <script src="assets/js/logo-tool.js"></script>
     <script src="assets/js/calendar-tool.js"></script>
     <script src="assets/js/bootstrap.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-database-compat.js"></script>
+    <script src="assets/js/online-users.js"></script>
+
+    <!-- 在线人数悬浮窗 -->
+    <div id="online-widget" class="ow ow--alone">
+        <div class="ow__inner">
+            <!-- 1人：一个人 -->
+            <div class="ow__state ow__state--alone">
+                <div class="ow__icon">🌸</div>
+                <div class="ow__title">在想他么~</div>
+                <div class="ow__sub">一个人</div>
+            </div>
+            <!-- 2人：成就达成 -->
+            <div class="ow__state ow__state--together">
+                <div class="ow__ribbon">成就达成</div>
+                <div class="ow__icon">💕</div>
+                <div class="ow__title">想了么！</div>
+                <div class="ow__check">✓</div>
+            </div>
+            <!-- 3+人：彩蛋 -->
+            <div class="ow__state ow__state--party">
+                <div class="ow__icon">👀</div>
+                <div class="ow__title">有外人！</div>
+                <div class="ow__sub">你们谁啊</div>
+            </div>
+        </div>
+    </div>
 </body>
 
 </html>
