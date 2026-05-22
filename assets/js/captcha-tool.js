@@ -207,6 +207,9 @@
             item.addEventListener('drop', onDrop);
             item.addEventListener('dragend', onDragEnd);
 
+            // Touch drag
+            bindTouchDrag(item);
+
             (function(idx) {
                 item.addEventListener('dblclick', function() { openEditor(idx); });
             })(i);
@@ -327,39 +330,54 @@
             img.onload = initImage;
         }
 
-        // Drag to pan
-        viewport.addEventListener('mousedown', function(e) {
+        // Drag to pan (mouse + touch)
+        function onStart(clientX, clientY) {
             isDragging = true;
-            dragStartX = e.clientX;
-            dragStartY = e.clientY;
+            dragStartX = clientX;
+            dragStartY = clientY;
             startCenterXRatio = currentCenterXRatio;
             startCenterYRatio = currentCenterYRatio;
-            e.preventDefault();
-        });
+        }
 
-        function onMouseMove(e) {
+        function onMove(clientX, clientY) {
             if (!isDragging) return;
             var vw = viewport.offsetWidth;
             var vh = viewport.offsetHeight;
             var fitScale = Math.min(vw / imgW, vh / imgH);
             var s = fitScale * currentScaleRel;
-            var dx = (e.clientX - dragStartX) / s;
-            var dy = (e.clientY - dragStartY) / s;
-            // Convert pixel delta to ratio delta
-            currentCenterXRatio = startCenterXRatio + dx / imgW;
-            currentCenterYRatio = startCenterYRatio + dy / imgH;
-            // Clamp
-            currentCenterXRatio = Math.max(0, Math.min(1, currentCenterXRatio));
-            currentCenterYRatio = Math.max(0, Math.min(1, currentCenterYRatio));
+            var dx = (clientX - dragStartX) / s;
+            var dy = (clientY - dragStartY) / s;
+            currentCenterXRatio = Math.max(0, Math.min(1, startCenterXRatio + dx / imgW));
+            currentCenterYRatio = Math.max(0, Math.min(1, startCenterYRatio + dy / imgH));
             updateTransform();
         }
 
-        function onMouseUp() {
+        function onEnd() {
             isDragging = false;
         }
 
-        window.addEventListener('mousemove', onMouseMove);
-        window.addEventListener('mouseup', onMouseUp);
+        viewport.addEventListener('mousedown', function(e) {
+            onStart(e.clientX, e.clientY);
+            e.preventDefault();
+        });
+
+        window.addEventListener('mousemove', function(e) { onMove(e.clientX, e.clientY); });
+        window.addEventListener('mouseup', onEnd);
+
+        viewport.addEventListener('touchstart', function(e) {
+            if (e.touches.length === 1) {
+                onStart(e.touches[0].clientX, e.touches[0].clientY);
+            }
+        }, { passive: true });
+
+        viewport.addEventListener('touchmove', function(e) {
+            if (e.touches.length === 1) {
+                onMove(e.touches[0].clientX, e.touches[0].clientY);
+                e.preventDefault();
+            }
+        }, { passive: false });
+
+        viewport.addEventListener('touchend', onEnd);
 
         // Scroll to zoom
         viewport.addEventListener('wheel', function(e) {
@@ -414,10 +432,11 @@
         }
     }
 
-    // ── Drag & Drop Reorder ──
+    // ── Drag & Drop Reorder (Mouse + Touch) ──
 
     var dragIndex = null;
 
+    // Mouse: HTML5 Drag API
     function onDragStart(e) {
         dragIndex = parseInt(this.dataset.index, 10);
         this.classList.add('dragging');
@@ -439,15 +458,153 @@
         this.classList.remove('drag-over');
         var dropIndex = parseInt(this.dataset.index, 10);
         if (dragIndex === null || dragIndex === dropIndex) return;
+        performSwap(dragIndex, dropIndex);
+    }
 
-        swap(images, dragIndex, dropIndex);
-        swap(imageCrops, dragIndex, dropIndex);
-        swap(imageSizes, dragIndex, dropIndex);
+    function onDragEnd() {
+        this.classList.remove('dragging');
+        dragIndex = null;
+        thumbGridEl.querySelectorAll('.drag-over').forEach(function(el) { el.classList.remove('drag-over'); });
+    }
+
+    // Touch: long press to drag
+    var touchDragState = null;
+    var longPressTimer = null;
+
+    function bindTouchDrag(item) {
+        var startX, startY, hasMoved;
+
+        item.addEventListener('touchstart', function(e) {
+            if (e.touches.length !== 1) return;
+            var touch = e.touches[0];
+            startX = touch.clientX;
+            startY = touch.clientY;
+            hasMoved = false;
+
+            longPressTimer = setTimeout(function() {
+                if (hasMoved) return;
+                var idx = parseInt(item.dataset.index, 10);
+                startTouchDrag(idx, item, touch.clientX, touch.clientY);
+            }, 300);
+        }, { passive: true });
+
+        item.addEventListener('touchmove', function(e) {
+            if (e.touches.length !== 1) return;
+            var touch = e.touches[0];
+            if (Math.abs(touch.clientX - startX) > 10 || Math.abs(touch.clientY - startY) > 10) {
+                hasMoved = true;
+                if (longPressTimer) { clearTimeout(longPressTimer); longPressTimer = null; }
+            }
+            if (touchDragState) {
+                moveTouchDrag(touch.clientX, touch.clientY);
+                e.preventDefault();
+            }
+        }, { passive: false });
+
+        item.addEventListener('touchend', function() {
+            if (longPressTimer) { clearTimeout(longPressTimer); longPressTimer = null; }
+            if (touchDragState) {
+                endTouchDrag();
+            }
+        });
+
+        item.addEventListener('touchcancel', function() {
+            if (longPressTimer) { clearTimeout(longPressTimer); longPressTimer = null; }
+            if (touchDragState) {
+                cancelTouchDrag();
+            }
+        });
+    }
+
+    function startTouchDrag(index, item, x, y) {
+        var rect = item.getBoundingClientRect();
+
+        // Create floating clone
+        var clone = item.cloneNode(true);
+        clone.style.position = 'fixed';
+        clone.style.left = rect.left + 'px';
+        clone.style.top = rect.top + 'px';
+        clone.style.width = rect.width + 'px';
+        clone.style.height = rect.height + 'px';
+        clone.style.zIndex = '9999';
+        clone.style.opacity = '0.85';
+        clone.style.pointerEvents = 'none';
+        clone.style.transition = 'none';
+        clone.classList.add('dragging');
+        document.body.appendChild(clone);
+
+        item.style.opacity = '0.3';
+
+        touchDragState = {
+            index: index,
+            item: item,
+            clone: clone,
+            offsetX: x - rect.left,
+            offsetY: y - rect.top,
+            currentOverIndex: index
+        };
+    }
+
+    function moveTouchDrag(x, y) {
+        var s = touchDragState;
+        s.clone.style.left = (x - s.offsetX) + 'px';
+        s.clone.style.top = (y - s.offsetY) + 'px';
+
+        // Find which item we're over
+        var items = thumbGridEl.querySelectorAll('.captcha-thumb-item');
+        var overIndex = s.index;
+        items.forEach(function(el) {
+            var r = el.getBoundingClientRect();
+            if (x >= r.left && x <= r.right && y >= r.top && y <= r.bottom) {
+                overIndex = parseInt(el.dataset.index, 10);
+            }
+        });
+
+        // Update visual feedback
+        if (overIndex !== s.currentOverIndex) {
+            if (s.currentOverIndex !== s.index) {
+                var prev = thumbGridEl.querySelector('[data-index="' + s.currentOverIndex + '"]');
+                if (prev) prev.classList.remove('drag-over');
+            }
+            s.currentOverIndex = overIndex;
+            if (overIndex !== s.index) {
+                var curr = thumbGridEl.querySelector('[data-index="' + overIndex + '"]');
+                if (curr) curr.classList.add('drag-over');
+            }
+        }
+    }
+
+    function endTouchDrag() {
+        var s = touchDragState;
+        if (s.currentOverIndex !== s.index) {
+            performSwap(s.index, s.currentOverIndex);
+        }
+        cleanupTouchDrag();
+    }
+
+    function cancelTouchDrag() {
+        cleanupTouchDrag();
+    }
+
+    function cleanupTouchDrag() {
+        var s = touchDragState;
+        if (!s) return;
+        s.clone.remove();
+        s.item.style.opacity = '';
+        thumbGridEl.querySelectorAll('.drag-over').forEach(function(el) { el.classList.remove('drag-over'); });
+        touchDragState = null;
+    }
+
+    // Shared swap logic
+    function performSwap(fromIndex, toIndex) {
+        swap(images, fromIndex, toIndex);
+        swap(imageCrops, fromIndex, toIndex);
+        swap(imageSizes, fromIndex, toIndex);
 
         var newAnswers = new Set();
         correctAnswers.forEach(function(idx) {
-            if (idx === dragIndex) newAnswers.add(dropIndex);
-            else if (idx === dropIndex) newAnswers.add(dragIndex);
+            if (idx === fromIndex) newAnswers.add(toIndex);
+            else if (idx === toIndex) newAnswers.add(fromIndex);
             else newAnswers.add(idx);
         });
         correctAnswers.clear();
@@ -460,12 +617,6 @@
         var temp = arr[i];
         arr[i] = arr[j];
         arr[j] = temp;
-    }
-
-    function onDragEnd() {
-        this.classList.remove('dragging');
-        dragIndex = null;
-        thumbGridEl.querySelectorAll('.drag-over').forEach(function(el) { el.classList.remove('drag-over'); });
     }
 
     // ── Remove Image ──

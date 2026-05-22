@@ -434,6 +434,9 @@
             border: 2px solid var(--border-color);
             background: var(--bg-body);
             transition: border-color 0.2s, box-shadow 0.2s;
+            -webkit-user-select: none;
+            user-select: none;
+            touch-action: pan-y;
         }
 
         .captcha-thumb-item:hover {
