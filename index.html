@@ -29,6 +29,10 @@
                 <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path></svg>
                 日历生成器
             </button>
+            <button class="tool-nav-btn" type="button" data-target="tool-captcha">
+                <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"></path></svg>
+                验证码生成器
+            </button>
         </div>
 
         <div class="preview-pane">
@@ -59,6 +63,21 @@
                     <div class="calendar-card">
                         <div class="weekdays"><div>一</div><div>二</div><div>三</div><div>四</div><div>五</div><div>六</div><div>日</div></div>
                         <div id="calendar-grid"></div>
+                    </div>
+                </div>
+            </div>
+
+            <div id="preview-tool-captcha" class="preview-content">
+                <div id="captcha-capture-area" class="captcha-card">
+                    <div class="captcha-header">
+                        <svg class="captcha-shield" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"></path></svg>
+                        <span>安全验证</span>
+                    </div>
+                    <div class="captcha-question" id="captcha-question-display">请选出包含云朵的图片</div>
+                    <div class="captcha-grid" id="captcha-grid"></div>
+                    <div class="captcha-footer">
+                        <svg class="captcha-refresh" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path></svg>
+                        <span class="captcha-verify-btn">验证</span>
                     </div>
                 </div>
             </div>
@@ -164,6 +183,42 @@
                 <button class="btn-primary btn-cal" id="download-cal-btn" type="button">导出</button>
             </div>
 
+            <div id="controls-tool-captcha" class="tool-control-group">
+                <div class="header">
+                    <h1>验证码拼图生成</h1>
+                    <p>上传图片，设置提示语，标记正确答案后导出</p>
+                </div>
+
+                <div class="control-group">
+                    <label>验证提示文字</label>
+                    <input type="text" id="captchaQuestion" placeholder="请输入验证提示..." value="请选出包含云朵的图片">
+                </div>
+
+                <div class="control-group">
+                    <label>上传图片（共 9 张）</label>
+                    <div class="captcha-upload-grid" id="captchaUploadGrid">
+                        <div class="captcha-upload-slot" data-index="0"><span class="slot-num">1</span><input type="file" accept="image/*"></div>
+                        <div class="captcha-upload-slot" data-index="1"><span class="slot-num">2</span><input type="file" accept="image/*"></div>
+                        <div class="captcha-upload-slot" data-index="2"><span class="slot-num">3</span><input type="file" accept="image/*"></div>
+                        <div class="captcha-upload-slot" data-index="3"><span class="slot-num">4</span><input type="file" accept="image/*"></div>
+                        <div class="captcha-upload-slot" data-index="4"><span class="slot-num">5</span><input type="file" accept="image/*"></div>
+                        <div class="captcha-upload-slot" data-index="5"><span class="slot-num">6</span><input type="file" accept="image/*"></div>
+                        <div class="captcha-upload-slot" data-index="6"><span class="slot-num">7</span><input type="file" accept="image/*"></div>
+                        <div class="captcha-upload-slot" data-index="7"><span class="slot-num">8</span><input type="file" accept="image/*"></div>
+                        <div class="captcha-upload-slot" data-index="8"><span class="slot-num">9</span><input type="file" accept="image/*"></div>
+                    </div>
+                </div>
+
+                <div class="control-group">
+                    <label>点击左侧预览中的图片标记正确答案</label>
+                    <div class="captcha-answer-hint">
+                        <span class="captcha-answer-count" id="captchaAnswerCount">已选 0 个答案</span>
+                    </div>
+                </div>
+
+                <button class="btn-primary" id="btnExportCaptcha" type="button">导出图片</button>
+            </div>
+
             <div class="developer-message">
                 <span class="dev-en">Designed &amp; Developed with care by 阿翔, for 阿媛</span>
                 <span class="dev-zh">把重复交给工具，把时间还给生活。</span>
@@ -175,6 +230,7 @@
     <script src="assets/js/shared.js"></script>
     <script src="assets/js/logo-tool.js"></script>
     <script src="assets/js/calendar-tool.js"></script>
+    <script src="assets/js/captcha-tool.js"></script>
     <script src="assets/js/bootstrap.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-database-compat.js"></script>
