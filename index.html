@@ -29,7 +29,7 @@
                 <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path></svg>
                 日历生成器
             </button>
-            <button class="tool-nav-btn" type="button" data-target="tool-captcha">
+            <button class="tool-nav-btn" type="button" data-target="tool-captcha" style="display:none">
                 <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"></path></svg>
                 验证码生成器
             </button>
@@ -67,7 +67,7 @@
                 </div>
             </div>
 
-            <div id="preview-tool-captcha" class="preview-content">
+            <div id="preview-tool-captcha" class="preview-content" style="display:none">
                 <div id="captcha-capture-area" class="captcha-card">
                     <div class="captcha-header">
                         <div class="captcha-header-title" id="captcha-question-display">请选出包含云朵的图片</div>
@@ -195,7 +195,7 @@
                 <button class="btn-primary btn-cal" id="download-cal-btn" type="button">导出</button>
             </div>
 
-            <div id="controls-tool-captcha" class="tool-control-group">
+            <div id="controls-tool-captcha" class="tool-control-group" style="display:none">
                 <div class="header">
                     <h1>验证码拼图生成</h1>
                     <p>批量上传图片，拖动调整顺序，标记正确答案后导出</p>
@@ -245,7 +245,7 @@
     <script src="assets/js/online-users.js"></script>
 
     <!-- 在线人数悬浮窗 -->
-    <div id="online-widget" class="ow ow--alone">
+    <div id="online-widget" class="ow ow--alone" style="display:none">
         <div class="ow__inner">
             <!-- 1人：一个人 -->
             <div class="ow__state ow__state--alone">
